@@ -1,0 +1,26 @@
+# Model parameters
+model: 'yolov8'  # Options: 'yolov3', 'yolov5', 'yolov8'
+num_classes: 3  # Number of classes in your dataset
+img_size: 640  # Image size for training
+
+# Training parameters
+batch_size: 16
+epochs: 100
+
+# Data configuration
+data_yaml: 'path/to/data.yaml'  # Path to your data.yaml file
+
+# Output configuration
+project: 'yolo_project'  # Project name for saving results
+name: 'run1'  # Run name
+
+# Hardware configuration
+device: 'cuda'  # or 'cpu'
+n_cpu: 4  # Number of CPU workers to use for data loading
+
+# The following parameters are handled automatically by Ultralytics
+# and don't need to be specified in the config file:
+# - learning_rate
+# - momentum
+# - weight_decay
+# - augmentation (handled by Ultralytics' default settings)
