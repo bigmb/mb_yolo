@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLOv8 Object Detection (1s Interval)</title>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #videoContainer { position: relative; display: inline-block; }
+        #video { max-width: 100%; }
+        #modelInput { margin: 20px 0; }
+        #startButton { margin: 10px 0; padding: 10px 20px; font-size: 16px; }
+        #resultDialog {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .dialog-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        #resultCanvas { max-width: 100%; }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #log {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>YOLOv8 Object Detection (1s Interval)</h1>
+    <input type="file" id="modelInput" accept=".onnx">
+    <button id="startButton" disabled>Start Detection</button>
+    <div id="videoContainer">
+        <video id="video" autoplay muted></video>
+    </div>
+    <div id="log"></div>
+
+    <div id="resultDialog">
+        <div class="dialog-content">
+            <span class="close">&times;</span>
+            <h2>Detection Result</h2>
+            <canvas id="resultCanvas"></canvas>
+            <p id="processingTime"></p>
+            <div id="detectionResults"></div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const modelInput = document.getElementById('modelInput');
+        const startButton = document.getElementById('startButton');
+        const resultDialog = document.getElementById('resultDialog');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const processingTimeElement = document.getElementById('processingTime');
+        const detectionResultsElement = document.getElementById('detectionResults');
+        const closeButton = document.getElementsByClassName('close')[0];
+        const logElement = document.getElementById('log');
+        
+        let model;
+        let isRunning = false;
+        let processingInterval;
+
+        // YOLOv8 class names (modify as needed)
+        const classNames = ['bad weld', 'good weld', 'defect'];
+
+        // Utility function to log messages to console and the log element
+        function log(message) {
+            console.log(message);
+            logElement.innerHTML += message + '<br>';
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function checkOrtAvailability() {
+            if (typeof ort === 'undefined') {
+                log("Error: ONNX Runtime (ort) is not defined. The script may have failed to load.");
+                return false;
+            }
+            log("ONNX Runtime (ort) is available.");
+            return true;
+        }
+
+        async function initONNX() {
+            try {
+                log("Checking ONNX Runtime availability...");
+                if (!checkOrtAvailability()) {
+                    throw new Error("ONNX Runtime is not available");
+                }
+                log("Initializing ONNX Runtime...");
+                
+                // Optional SIMD initialization
+                if (ort.env.wasm.simd) {
+                    await ort.env.wasm.simd();
+                    log("WebAssembly SIMD enabled.");
+                } else {
+                    log("SIMD not supported, proceeding without SIMD.");
+                }
+
+                log("ONNX Runtime initialized successfully.");
+            } catch (error) {
+                log("Error initializing ONNX Runtime: " + error.message);
+                throw error;
+            }
+        }
+
+        modelInput.addEventListener('change', (event) => {
+            startButton.disabled = event.target.files.length === 0;
+        });
+
+        startButton.addEventListener('click', async () => {
+            if (isRunning) {
+                clearInterval(processingInterval);
+                isRunning = false;
+                startButton.textContent = 'Start Detection';
+            } else {
+                try {
+                    if (!checkOrtAvailability()) {
+                        throw new Error("ONNX Runtime is not available");
+                    }
+                    await initONNX();
+                    await loadModel();
+                    if (model) {
+                        await startCamera();
+                        startDetection();
+                        isRunning = true;
+                        startButton.textContent = 'Stop Detection';
+                    }
+                } catch (error) {
+                    log("Error starting detection: " + error.message);
+                    alert('Error starting detection. Please check the console and log for details.');
+                }
+            }
+        });
+
+        closeButton.onclick = function() {
+            resultDialog.style.display = "none";
+        }
+
+        async function loadModel() {
+            try {
+                log("Loading model...");
+                const modelFile = modelInput.files[0];
+                const arrayBuffer = await modelFile.arrayBuffer();
+                model = await ort.InferenceSession.create(arrayBuffer);
+                log("Model loaded successfully");
+            } catch (error) {
+                log("Error loading the model: " + error.message);
+                alert('Error loading the model. Please check the console for details.');
+                throw error;
+            }
+        }
+
+        async function startCamera() {
+            try {
+                log("Starting camera...");
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = resolve;
+                });
+                log("Camera started successfully");
+            } catch (error) {
+                log("Error accessing the camera: " + error.message);
+                alert('Error accessing the camera. Please make sure you have given the necessary permissions.');
+                throw error;
+            }
+        }
+
+        function startDetection() {
+            log("Starting detection...");
+            processingInterval = setInterval(processFrame, 3000); // Increased interval for better mobile performance
+        }
+
+    async function processFrame() {
+        if (!model || !isRunning) return;
+
+        const startTime = performance.now();
+
+        try {
+            const inputTensor = await preprocess(video);
+            const results = await model.run({ images: inputTensor });
+            const boxes = results.output0.data;
+
+            console.log("Model output:", boxes); // Debugging line
+
+            if (boxes.length === 0) {
+                log("No objects detected.");
+                return;
+            }
+
+            displayResults(boxes, startTime);
+        } catch (error) {
+            log("Error processing frame: " + error.message);
+        }
+    }
+
+
+        async function preprocess(videoElement) {
+            // Set canvas dimensions to 640x640 to match the model's expected input
+            const offscreenCanvas = new OffscreenCanvas(640, 640); 
+            const offscreenCtx = offscreenCanvas.getContext('2d');
+
+            // Resize the video to 640x640
+            offscreenCtx.drawImage(videoElement, 0, 0, 640, 640); 
+
+            // Get image data
+            const imageData = offscreenCtx.getImageData(0, 0, 640, 640);
+
+            // Create a Float32Array and normalize pixel values to [0, 1]
+            const data = new Float32Array(3 * 640 * 640);
+            for (let i = 0; i < imageData.data.length / 4; i++) {
+                for (let c = 0; c < 3; c++) {
+                    data[3 * i + c] = imageData.data[4 * i + c] / 255.0;
+                }
+            }
+
+            // Return the tensor with dimensions [1, 3, 640, 640] (Batch size, Channels, Height, Width)
+            return new ort.Tensor('float32', data, [1, 3, 640, 640]);
+        }
+
+        function displayResults(boxes, startTime) {
+            resultCanvas.width = video.videoWidth;
+            resultCanvas.height = video.videoHeight;
+            const ctx = resultCanvas.getContext('2d');
+
+            // Draw the current video frame on the canvas
+            ctx.drawImage(video, 0, 0, resultCanvas.width, resultCanvas.height);
+
+            const numBoxes = boxes.length / 7; // Adjust based on your model output
+            let detectedObjects = [];
+            const confidenceThreshold = 0.3; // Adjust this as needed
+
+            const boundingBoxes = [];
+            const scores = [];
+    for (let i = 0; i < numBoxes; i++) {
+        const [x1, y1, x2, y2, score, classId] = boxes.slice(i * 7, (i + 1) * 7);
+
+        if (score > confidenceThreshold && classId < classNames.length && classId >= 0) {
+            boundingBoxes.push([x1, y1, x2, y2]);
+            scores.push(score);
+
+            // Draw the bounding box and label
+            const color = `hsl(${classId * 30 % 360}, 100%, 50%)`;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+            ctx.fillStyle = color;
+            ctx.font = '16px Arial';
+            ctx.fillText(`${classNames[classId]} ${score.toFixed(2)}`, x1, y1 - 5);
+
+            detectedObjects.push(`${classNames[classId]} (${score.toFixed(2)})`);
+        } else if (score > confidenceThreshold) {
+            log(`Warning: Invalid class ID ${classId} detected. Ignoring this detection.`);
+        }
+    }
+
+    // Apply Non-Maximum Suppression (NMS) to reduce overlapping boxes
+    const nmsIndices = nonMaxSuppression(boundingBoxes, scores);
+
+    // Display only the NMS-filtered bounding boxes
+    nmsIndices.forEach(i => {
+        const [x1, y1, x2, y2] = boundingBoxes[i];
+        const score = scores[i];
+        const color = `hsl(${i * 30 % 360}, 100%, 50%)`;
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+    });
+
+    processingTimeElement.textContent = `Processing time: ${(performance.now() - startTime).toFixed(2)} ms`;
+    detectionResultsElement.innerHTML = detectedObjects.join('<br>');
+    resultDialog.style.display = "block";
+}
+
+function nonMaxSuppression(boxes, scores, iouThreshold = 0.5) {
+    const indices = [];
+    const areas = boxes.map(([x1, y1, x2, y2]) => (x2 - x1) * (y2 - y1));
+
+    boxes.forEach((box, i) => {
+        const [x1, y1, x2, y2] = box;
+        let keep = true;
+
+        for (let j = 0; j < indices.length; j++) {
+            const idx = indices[j];
+            const [x1Prev, y1Prev, x2Prev, y2Prev] = boxes[idx];
+
+            // Calculate IoU (Intersection over Union)
+            const xLeft = Math.max(x1, x1Prev);
+            const yTop = Math.max(y1, y1Prev);
+            const xRight = Math.min(x2, x2Prev);
+            const yBottom = Math.min(y2, y2Prev);
+
+            const intersection = Math.max(0, xRight - xLeft) * Math.max(0, yBottom - yTop);
+            const union = areas[i] + areas[idx] - intersection;
+            const iou = intersection / union;
+
+            if (iou > iouThreshold) {
+                keep = false;
+                break;
+            }
+        }
+
+        if (keep) {
+            indices.push(i);
+        }
+    });
+
+    return indices;
+}
+
+    </script>
+</body>
+</html>

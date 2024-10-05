@@ -36,6 +36,11 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+
+##files
+yolo_project
+*.pt
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
