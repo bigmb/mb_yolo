@@ -22,10 +22,10 @@ def create_model(version, model_size, model_function, num_classes):
     if model_function == 'detection':
         model_name = f"{version}{model_size}.pt"
     else:
-        model_name = f"{version}{model_size}-{model_function}"
+        model_name = f"{version}{model_size}-{model_function}.pt"
     
     # Create a new YOLO model
-    model = YOLO(f"{model_name}.yaml")
+    model = YOLO(f"{model_name}")
     
     # Modify the model for the specific number of classes
     model.model.nc = num_classes
