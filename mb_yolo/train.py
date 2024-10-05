@@ -1,6 +1,8 @@
 import yaml
 from mb_yolo.models import create_model
 
+__all__ = ["train"]
+
 def train(config_path):
     # Load configuration
     with open(config_path, 'r') as file:

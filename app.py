@@ -18,7 +18,8 @@ def main():
     config = load_config(config_path)
 
     st.header("Model Configuration")
-    config['model'] = st.selectbox("Select YOLO version", ['yolov3', 'yolov5', 'yolov8'], index=['yolov3', 'yolov5', 'yolov8'].index(config['model']))
+    config['model'] = st.selectbox("Select YOLO version", ['yolov3', 'yolov5', 'yolov8', 'yolo10', 'yolo11'], 
+                                   index=['yolov3', 'yolov5', 'yolov8', 'yolo10', 'yolo11'].index(config['model']))
     config['num_classes'] = st.number_input("Number of classes", min_value=1, value=config['num_classes'])
     config['img_size'] = st.number_input("Image size", min_value=32, value=config['img_size'])
 

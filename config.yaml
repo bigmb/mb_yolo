@@ -1,6 +1,15 @@
 # Model parameters
-model: 'yolov8'  # Options: 'yolov3', 'yolov5', 'yolov8'
-num_classes: 3  # Number of classes in your dataset
+model: 'yolov8'  # Options: 'yolov3', 'yolov5', 'yolov8', 'yolo10', 'yolo11'
+
+### check if delemeter is same online too 'https://docs.ultralytics.com/models'.  Example yolov5 has 'nu','mu','xu' etc..
+model_size: 'n' # Options: 's', 'm', 'l', 'x', 'n' (default: n)  
+
+## model function : detection, segmentation, pose etc. (Default :detection)
+## only yolov8 and yolov11 has other functions.
+
+model_function: 'detection'  # Options: 'detection', 'segmentation', 'pose', 'obb', 'classifcation'
+
+num_classes: 3  # Number of classes in your dataset. write the classes in data.yaml file
 img_size: 640  # Image size for training
 
 # Training parameters
@@ -8,14 +17,14 @@ batch_size: 16
 epochs: 100
 
 # Data configuration
-data_yaml: 'path/to/data.yaml'  # Path to your data.yaml file
+data_yaml: './model_configs/data.yaml'  # Path to your data.yaml file which is config file for YOLO training. Keep that in model_configs
 
 # Output configuration
 project: 'yolo_project'  # Project name for saving results
 name: 'run1'  # Run name
 
 # Hardware configuration
-device: 'cuda'  # or 'cpu'
+device: 'cpu'  # or 'cpu'
 n_cpu: 4  # Number of CPU workers to use for data loading
 
 # The following parameters are handled automatically by Ultralytics

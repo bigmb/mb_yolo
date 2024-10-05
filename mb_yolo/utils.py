@@ -1,6 +1,8 @@
 import numpy as np
 import torch
 
+__all__ = ['Utils']
+
 class Utils:
     @staticmethod
     def iou(box1, box2):

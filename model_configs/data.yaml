@@ -1,0 +1,10 @@
+path: /home/malav/Downloads/datasets/weld_dataset/weld_defect_data
+train: train/images
+val: valid/images
+test: test/images
+
+##classes names
+names:
+  0: 'Bad Weld'
+  1: 'Good Weld'
+  2: 'Defect'
