@@ -9,7 +9,7 @@ def train(config_path):
         config = yaml.safe_load(file)
     
     # Initialize model
-    model = create_model(config['model'], config['num_classes'])
+    model = create_model(config['model'],config['model_size'],config['model_function'] ,config['num_classes'])
     
     # Train the model using Ultralytics
     results = model.train(
