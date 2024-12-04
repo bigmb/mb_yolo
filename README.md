@@ -11,7 +11,60 @@ MB-YOLO is a Python package that implements YOLO (You Only Look Once) object det
 - Flexible configuration system
 - Specialized for weld defect detection
 
+## Package Structure
+
+The `mb_yolo` package consists of several key modules:
+
+### train.py
+Main training module that handles:
+- Configuration loading from YAML files
+- Model initialization
+- Training pipeline setup using Ultralytics
+- Automated result saving and logging
+
+```python
+from mb_yolo.train import train
+train("config.yaml")  # Starts training with specified configuration
+```
+
+### models.py
+Model management module that provides:
+- Support for multiple YOLO versions (v3, v5, v8, v10, v11)
+- Model size configurations (n, s, m, l, x)
+- Multiple model functions:
+  - Detection (default)
+  - Segmentation
+  - Pose estimation
+  - Oriented bounding box (OBB)
+  - Classification
+- Automatic model creation and class number modification
+
+```python
+from mb_yolo.models import create_model
+model = create_model('yolov8', 'n', 'detection', num_classes=3)
+```
+
+### utils.py
+Utility functions for object detection operations:
+- IoU (Intersection over Union) calculation between bounding boxes
+- Non-Maximum Suppression (NMS) implementation for filtering overlapping detections
+- Bounding box format conversion (xywh to xyxy)
+
+```python
+from mb_yolo.utils import Utils
+# Calculate IoU between two boxes
+iou = Utils.iou(box1, box2)
+# Convert box format
+xyxy = Utils.xywh2xyxy(boxes)
+# Apply NMS
+kept_indices = Utils.non_max_suppression(boxes, scores, iou_threshold=0.5)
+```
+
 ## Installation
+
+```
+pip install mb_yolo -U
+```
 
 ```bash
 # Clone the repository
@@ -113,4 +166,3 @@ predictor.predict_item(bbox=detection_box, gemini_bbox=False)
 - Device (CPU/GPU)
 - Number of workers
 - Project and run names for organizing results
-
