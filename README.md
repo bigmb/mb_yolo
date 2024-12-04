@@ -68,7 +68,7 @@ pip install mb_yolo -U
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/mb_yolo.git
+git clone https://github.com/bigmb/mb_yolo.git
 
 # Install the package
 pip install -e .
