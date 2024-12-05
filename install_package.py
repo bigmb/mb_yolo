@@ -56,4 +56,4 @@ os.system(py_requires + ' -m pip install '+file + '/dist/' +os.listdir(file +'/d
 
 print('package installed')
 print('*'*100)
-os.system(py_requires + ' -m twine upload dist/*')
+#os.system(py_requires + ' -m twine upload dist/*')
