@@ -96,3 +96,40 @@ class Utils:
         y[:, 2] = x[:, 0] + x[:, 2] / 2  # x2 = x + w/2
         y[:, 3] = x[:, 1] + x[:, 3] / 2  # y2 = y + h/2
         return y
+
+    @staticmethod
+    def xyxy2xywh(x):
+        """
+        Convert bounding box format from [x1, y1, x2, y2] to [x, y, w, h].
+        
+        This function converts bounding box coordinates from corner format
+        (commonly used in computer vision) to center-width format (YOLO format).
+        
+        Args:
+            x (torch.Tensor or numpy.ndarray): Bounding boxes in [x1, y1, x2, y2] format
+                where (x1,y1) is top-left corner and (x2,y2) is bottom-right corner
+        
+        Returns:
+            torch.Tensor or numpy.ndarray: Bounding boxes in [x, y, w, h] format
+                where x,y is the center point and w,h are width and height
+        
+        Example:
+            >>> boxes_xyxy = torch.tensor([[75, 75, 125, 125]])
+            >>> boxes_xywh = Utils.xyxy2xywh(boxes_xyxy)
+        """
+        if isinstance(x, torch.Tensor):
+            y = torch.zeros_like(x)
+        elif isinstance(x, np.ndarray):
+            y = np.zeros_like(x)
+        else:
+            raise TypeError("Input must be a torch.Tensor or numpy.ndarray")
+
+        # Compute center x, center y
+        y[:, 0] = (x[:, 0] + x[:, 2]) / 2  # Center x
+        y[:, 1] = (x[:, 1] + x[:, 3]) / 2  # Center y
+
+        # Compute width and height
+        y[:, 2] = x[:, 2] - x[:, 0]  # Width
+        y[:, 3] = x[:, 3] - x[:, 1]  # Height
+        
+        return y
