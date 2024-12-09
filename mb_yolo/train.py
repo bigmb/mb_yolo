@@ -45,5 +45,3 @@ def train(config_path):
     # The model is automatically saved by Ultralytics after training
     print(f"Training completed. Results: {results}")
 
-if __name__ == "__main__":
-    train("config.yaml")
