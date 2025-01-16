@@ -21,6 +21,10 @@ file = os.getcwd()
 #subprocess.run(["cd",file]), check=True, stdout=subprocess.PIPE).stdout
 os.system('cd ' + file)
 
+subprocess.run(["git", "pull"], check=True, stdout=subprocess.PIPE).stdout
+print('git pull done')
+print('*'*100)
+
 os.system('./make_version.sh')
 
 print("version file updated")
@@ -33,9 +37,7 @@ print('*'*100)
 #     print('git commit done with message: ' + args.message)
 # # print('git commit done')
 
-subprocess.run(["git", "pull"], check=True, stdout=subprocess.PIPE).stdout
-print('git pull done')
-print('*'*100)
+
 
 subprocess.run(["git", "push"], check=True, stdout=subprocess.PIPE).stdout
 print('*'*100)
