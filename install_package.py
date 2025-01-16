@@ -37,9 +37,8 @@ print('*'*100)
 #     print('git commit done with message: ' + args.message)
 # # print('git commit done')
 
-
-
 subprocess.run(["git", "push"], check=True, stdout=subprocess.PIPE).stdout
+subprocess.run(["git", "push", "--tags"], check=True, stdout=subprocess.PIPE).stdout
 print('*'*100)
 print('removing dist and build folders')
 

@@ -38,5 +38,6 @@ echo "__all__  = ['MAJOR_VERSION', 'MINOR_VERSION', 'PATCH_VERSION', 'version']"
 
 git add -A
 git commit -m "updated version.py to ${FULL_VERSION}"
-git tag "${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}"
+# git tag "${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}"
+git tag -a "v${FULL_VERSION}" -m "Version ${FULL_VERSION}"
 echo "Repository has been tagged as version ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}"
