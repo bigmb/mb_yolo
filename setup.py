@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from setuptools import setup,find_packages
+from setuptools import setup,find_packages,find_namespace_packages
 import os
 
 VERSION_FILE = os.path.join(os.path.dirname(__file__), "VERSION.txt")
 print(VERSION_FILE)
 setup(
     name="mb_yolo",
-    description="YOLO function file",
+    description="YOLO function file included in mb.*",
     author=["Malav Bateriwala"],
-    packages=find_packages(),
+    packages=find_namespace_packages(include=["mb.*"]),
     #packages=find_packages(),
     scripts=[],
     install_requires=["mb_base"],

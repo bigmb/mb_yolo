@@ -1,9 +1,10 @@
 import yaml
-from mb_yolo.models import create_model
+from .models import create_model
+from mb.utils.logging import logg
 
 __all__ = ["train"]
 
-def train(config_path):
+def train(config_path, logger=None):
     """
     Train a YOLO model using the specified configuration.
     
@@ -43,5 +44,5 @@ def train(config_path):
     )
     
     # The model is automatically saved by Ultralytics after training
-    print(f"Training completed. Results: {results}")
+    logg.info(f"Training completed. Results: {results}", logger=logger)
 

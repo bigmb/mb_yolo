@@ -23,7 +23,7 @@ echo "Updating ${VERSION_FILEPATH}..."
 echo "${FULL_VERSION}" > ${VERSION_FILEPATH}
 
 # version.py
-VERSION_DIRPATH=${SCRIPT_PATH}/mb_yolo
+VERSION_DIRPATH=${SCRIPT_PATH}/mb/yolo
 VERSION_FILEPATH=${VERSION_DIRPATH}/version.py
 
 mkdir -p ${VERSION_DIRPATH}
