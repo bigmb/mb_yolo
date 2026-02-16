@@ -23,7 +23,7 @@ Main training module that handles:
 - Automated result saving and logging
 
 ```python
-from mb_yolo.train import train
+from mb.yolo.train import train
 train("config.yaml")  # Starts training with specified configuration
 ```
 
@@ -40,7 +40,7 @@ Model management module that provides:
 - Automatic model creation and class number modification
 
 ```python
-from mb_yolo.models import create_model
+from mb.yolo.models import create_model
 model = create_model('yolov8', 'n', 'detection', num_classes=3)
 ```
 
@@ -51,7 +51,7 @@ Utility functions for object detection operations:
 - Bounding box format conversion (xywh to xyxy)
 
 ```python
-from mb_yolo.utils import Utils
+from mb.yolo.utils import Utils
 # Calculate IoU between two boxes
 iou = Utils.iou(box1, box2)
 # Convert box format
@@ -78,6 +78,7 @@ Requirements:
 - Python >= 3.8
 - mb_base
 - ultralytics
+- mb_utils
 
 ## Usage
 
@@ -114,7 +115,7 @@ n_cpu: 4
 
 3. Start training:
 ```python
-from mb_yolo.train import train
+from mb.yolo.train import train
 train("./config.yaml")
 ```
 
