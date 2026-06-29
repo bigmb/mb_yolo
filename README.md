@@ -92,7 +92,7 @@ val: valid/images
 test: test/images
 
 names:
-  0: 'Bad Weld'
+  0: 'Porosity'
   1: 'Good Weld'
   2: 'Defect'
 ```
